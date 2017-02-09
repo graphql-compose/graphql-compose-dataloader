@@ -1,0 +1,74 @@
+{
+  "name": "graphql-compose-dataloader",
+  "version": "0.0.1",
+  "description": "Add DataLoader to graphql-composer resolvers.",
+  "main": "lib/index.js",
+  "jsnext:main": "es/index.js",
+  "scripts": {
+    "build": "npm run build-cjs && npm run build-es",
+    "build-cjs": "rimraf lib && babel src --ignore __tests__,__mocks__ -d lib",
+    "build-es": "rimraf es && BABEL_ENV=es babel src --ignore __tests__,__mocks__ -d es",
+    "link": "yarn link graphql-compose && yarn link",
+    "unlink": "yarn unlink graphql-compose && yarn add graphql-compose",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "graphql",
+    "compose",
+    "schema",
+    "dataloader",
+    "graphql-schema",
+    "graphql-compose"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stoffern/graphql-compose-dataloader.git"
+  },
+  "author": "stoffern",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stoffern/graphql-compose-dataloader/issues"
+  },
+  "homepage": "https://github.com/stoffern/graphql-compose-dataloader#readme",
+  "dependencies": {
+    "dataloader": "^1.3.0",
+    "string-hash": "^1.1.1"
+  },
+  "peerDependencies": {
+    "graphql": ">=0.9.0",
+    "graphql-compose": ">=1.4.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-syntax-async-functions": "6.13.0",
+    "babel-plugin-transform-class-properties": "^6.22.0",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.22.0",
+    "babel-plugin-transform-regenerator": "^6.22.0",
+    "babel-plugin-transform-runtime": "^6.22.0",
+    "babel-preset-es2015": "^6.22.0",
+    "graphql-compose": "^1.10.0",
+    "nyc": "^10.1.2",
+    "rimraf": "2.5.4",
+    "cz-conventional-changelog": "^1.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "nyc": {
+    "exclude": [
+      "**/__mocks__/**",
+      "**/__tests__/**",
+      "resources",
+      "node_modules"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ]
+  }
+}
