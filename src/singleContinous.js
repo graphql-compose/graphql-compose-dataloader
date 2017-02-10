@@ -1,6 +1,3 @@
-import objectHash from 'object-hash'
-import stringHash from 'string-hash'
-
 /**
  * This class makes shure functions with params only run once
  */

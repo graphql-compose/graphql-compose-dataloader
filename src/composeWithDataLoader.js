@@ -1,6 +1,5 @@
 import { TypeComposer } from 'graphql-compose'
 import DataLoader from 'dataloader'
-import hash from 'object-hash'
 import SingleContinous from './singleContinous'
 
 import {
