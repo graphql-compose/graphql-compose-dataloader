@@ -22,10 +22,15 @@ export function composeWithDataLoader(
    * Set defaults
    */
   options ={
+    activate: true,
     cacheExpiration: options.cacheExpiration || 300,
     removeProjection: options.removeProjection || true,
+    seperatedFindByIds: options.seperatedFindByIds || false,
     debug: options.debug || false,
   } 
+
+
+  if(options.activate){
 
   /**
    * Add DataLoader to FindById
@@ -33,68 +38,103 @@ export function composeWithDataLoader(
   let findByIdResolver = typeComposer.getResolver('findById')
   let findByIdLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (findById)')
-    let params = resolveParamsArray[0]
-
-    return findByIdResolver.resolve(params).then(res => [res])
+    //response
+    return findByIdResolver.resolve(resolveParamsArray[0]).then(res => [res])
   },
-  { cacheKeyFn: key => key.args._id.toString() })
+  { cacheKeyFn: key => {
+    let newKey = getHashKey(key)
+    return newKey
+  } })
 
   typeComposer.setResolver( 'findById', 
-    findByIdResolver.wrapResolve(fn => rp => {
+    findByIdResolver.wrapResolve(next => rp => {
       if (options.removeProjection) delete rp.projection
-      SingleContinous.run(findByIdLoader, rp, options)
+      SingleContinous.run(findByIdLoader, rp, 'findById', options)
       return findByIdLoader.load(rp)
     })
   )
 
 
-
   /**
    * Add DataLoader to FindByIds
    */
-  // let findByIdsResolver = typeComposer.getResolver('findByIds')
-  // let findByIdsLoader = new DataLoader( (resolveParamsArray) => {
-  //   if (options.debug) console.log('New db request (findByIds)')
-  //   return findByIdResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  // },
-  // { cacheKeyFn: key => {
-  //   let hashKey = hash(key.args)
-  //   return hashKey
-  // } })
+  let findByIdsResolver = typeComposer.getResolver('findByIds')
+  let findByIdsLoader = new DataLoader( (resolveParamsArray) => {
+    if (options.debug) console.log('New db request (findByIds)')
 
-  // typeComposer.setResolver(
-  //   'findByIds', 
-  //   findByIdsResolver.wrapResolve(fn => rp => {
-  //     SingleContinous.run(findByIdsLoader, rp, opt)
-  //     return findByIdsLoader.load(rp)
-  //   })
-  // )
+    if (options.seperatedFindByIds){
+
+    }else{
+      return findByIdResolver.resolve(resolveParamsArray[0]).then(res => [res])
+    }
+  },
+  { cacheKeyFn: key => getHashKey(key) })
+
+  typeComposer.setResolver(
+    'findByIds', 
+    findByIdsResolver.wrapResolve(fn => rp => {
+      SingleContinous.run(findByIdsLoader, rp, 'findByIds', options)
+      return findByIdsLoader.load(rp)
+    })
+  )
   
   
+  /**
+   * Add DataLoader to Count
+   */
+  let countResolver = typeComposer.getResolver('count')
+  let countLoader = new DataLoader( (resolveParamsArray) => {
+    if (options.debug) console.log('New db request (count)')
+    return countResolver.resolve(resolveParamsArray[0]).then(res => [res])
+  },
+  { cacheKeyFn: key => getHashKey(key) })
+
+  typeComposer.setResolver(
+    'count', 
+    findByIdsResolver.wrapResolve(fn => rp => {
+      SingleContinous.run(countLoader, rp, 'count', options)
+      return countLoader.load(rp)
+    })
+  )
+  
+  
+  /**
+   * Add DataLoader to FindOne
+   */
+  let findOneResolver = typeComposer.getResolver('findOne')
+  let findOneLoader = new DataLoader( (resolveParamsArray) => {
+    if (options.debug) console.log('New db request (findOne)')
+    return findOneResolver.resolve(resolveParamsArray[0]).then(res => [res])
+  },
+  { cacheKeyFn: key => getHashKey(key) })
+
+  typeComposer.setResolver(
+    'findOne', 
+    findByIdsResolver.wrapResolve(fn => rp => {
+      SingleContinous.run(findOneLoader, rp, 'findOne', options)
+      return findOneLoader.load(rp)
+    })
+  )
 
   /**
    * Add DataLoader to FindMany
    */
-  // let findManyResolver = typeComposer.getResolver('findMany')
-  // let findManyLoader = new DataLoader( (resolveParamsArray) => {
-  //   if (options.debug) console.log('New db request (findMany)')
-  //   console.log(resolveParamsArray[0])
-  //   //response
-  //   return findManyResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  // },
-  // { cacheKeyFn: key => {
-  //   let hashKey = hash(key.args)
-  //   return hashKey
-  // } })
+  let findManyResolver = typeComposer.getResolver('findMany')
+  let findManyLoader = new DataLoader( (resolveParamsArray) => {
+    if (options.debug) console.log('New db request (findMany)')
+    //response
+    return findManyResolver.resolve(resolveParamsArray[0]).then(res => [res])
+  },
+  { cacheKeyFn: key => getHashKey(key)})
 
-  // typeComposer.setResolver(
-  //   'findMany', 
-  //   findManyResolver.wrapResolve(fn => rp => {
-  //     if (options.removeProjection) delete rp.projection
-  //     SingleContinous.run(findManyLoader, rp, options)
-  //     return findManyLoader.load(rp)
-  //   })
-  // )
+  typeComposer.setResolver(
+    'findMany', 
+    findManyResolver.wrapResolve(next => rp => {
+      if (options.removeProjection) delete rp.projection
+      SingleContinous.run(findManyLoader, rp, 'findMany', options)
+      return findManyLoader.load(rp)
+    })
+  )
 
 
   /**
@@ -104,28 +144,35 @@ export function composeWithDataLoader(
   let connectionFieldNames = typeComposer.getFieldNames()
   let connectionLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (connection)')
-    let params = resolveParamsArray[0]
     //response
-    return connectionResolver.resolve(params).then(res => [res])
+    return connectionResolver.resolve(resolveParamsArray[0]).then(res => [res])
   },
-  { cacheKeyFn: key => {
-    let hashKey = hash(key.args)
-    return hashKey
-  } })
+  { cacheKeyFn: key => getHashKey(key) })
 
   typeComposer.setResolver( 'connection', 
-    connectionResolver.wrapResolve(fn => rp => {
+    connectionResolver.wrapResolve(next => rp => {
       if(options.removeProjection){
         let projection ={ edges: { node: {} } }
         connectionFieldNames.map( field => projection.edges.node[field] = true)
         rp.projection = projection
       }
-      SingleContinous.run(connectionLoader, rp, options)
+      SingleContinous.run(connectionLoader, rp, 'connection', options)
       return connectionLoader.load(rp)
     })
   )
+    
+  }
 
-
+  const getHashKey = key =>{
+    let object = {}
+    Object.assign(object, 
+      { args: key.args }, 
+      { projection: key.projection || {} }, 
+      { rawQuery: JSON.stringify(key.rawQuery || {}) }, 
+      { context: JSON.stringify(key.context || {}) })
+    let hash = JSON.stringify(object).split("").reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)
+    return hash
+  }
 
   return typeComposer
 }
