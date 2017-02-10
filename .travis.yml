@@ -18,9 +18,6 @@ node_js:
   - '7'
   - '6'
   - '4'
-script:
-  - yarn run coverage
-  - yarn run build
 after_success:
   - npm run semantic-release
 branches:

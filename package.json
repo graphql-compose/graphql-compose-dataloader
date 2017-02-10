@@ -1,6 +1,6 @@
 {
   "name": "graphql-compose-dataloader",
-  "version": "0.0.0-development",
+  "version": "0.0.0-semantically-released",
   "description": "Add DataLoader to graphql-composer resolvers.",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
