@@ -22,20 +22,15 @@ export function composeWithDataLoader(
    * Set defaults
    */
   options ={
-    activate: true,
     cacheExpiration: options.cacheExpiration || 300,
     removeProjection: options.removeProjection || true,
-    seperatedFindByIds: options.seperatedFindByIds || false,
     debug: options.debug || false,
   } 
-
-
-  if(options.activate){
 
   /**
    * Add DataLoader to FindById
    */
-  let findByIdResolver = typeComposer.getResolver('findById')
+  let findByIdResolver = typeComposer.get('$findById')
   let findByIdLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (findById)')
     //response
@@ -58,15 +53,10 @@ export function composeWithDataLoader(
   /**
    * Add DataLoader to FindByIds
    */
-  let findByIdsResolver = typeComposer.getResolver('findByIds')
+  let findByIdsResolver = typeComposer.get('$findByIds')
   let findByIdsLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (findByIds)')
-
-    if (options.seperatedFindByIds){
-
-    }else{
-      return findByIdResolver.resolve(resolveParamsArray[0]).then(res => [res])
-    }
+    return findByIdsResolver.resolve(resolveParamsArray[0]).then(res => [res])
   },
   { cacheKeyFn: key => getHashKey(key) })
 
@@ -82,7 +72,7 @@ export function composeWithDataLoader(
   /**
    * Add DataLoader to Count
    */
-  let countResolver = typeComposer.getResolver('count')
+  let countResolver = typeComposer.get('$count')
   let countLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (count)')
     return countResolver.resolve(resolveParamsArray[0]).then(res => [res])
@@ -91,7 +81,7 @@ export function composeWithDataLoader(
 
   typeComposer.setResolver(
     'count', 
-    findByIdsResolver.wrapResolve(fn => rp => {
+    countResolver.wrapResolve(fn => rp => {
       SingleContinous.run(countLoader, rp, 'count', options)
       return countLoader.load(rp)
     })
@@ -101,7 +91,7 @@ export function composeWithDataLoader(
   /**
    * Add DataLoader to FindOne
    */
-  let findOneResolver = typeComposer.getResolver('findOne')
+  let findOneResolver = typeComposer.get('$findOne')
   let findOneLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (findOne)')
     return findOneResolver.resolve(resolveParamsArray[0]).then(res => [res])
@@ -119,7 +109,7 @@ export function composeWithDataLoader(
   /**
    * Add DataLoader to FindMany
    */
-  let findManyResolver = typeComposer.getResolver('findMany')
+  let findManyResolver = typeComposer.get('$findMany')
   let findManyLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (findMany)')
     //response
@@ -140,7 +130,7 @@ export function composeWithDataLoader(
   /**
    * Add DataLoader to Connection
    */
-  let connectionResolver = typeComposer.getResolver('connection')
+  let connectionResolver = typeComposer.get('$connection')
   let connectionFieldNames = typeComposer.getFieldNames()
   let connectionLoader = new DataLoader( (resolveParamsArray) => {
     if (options.debug) console.log('New db request (connection)')
@@ -161,7 +151,6 @@ export function composeWithDataLoader(
     })
   )
     
-  }
 
   const getHashKey = key =>{
     let object = {}
