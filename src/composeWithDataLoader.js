@@ -30,11 +30,11 @@ export function composeWithDataLoader(
    * Add DataLoader to FindById
    */
   let findByIdResolver = typeComposer.get('$findById')
-  let findByIdLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (findById)')
-    //response
-    return findByIdResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
+  let findByIdLoader = new DataLoader( (resolveParamsArray) => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (findById)')
+      resolve(resolveParamsArray.map(rp => findByIdResolver.resolve(rp)))
+    }),
   { cacheKeyFn: key => {
     let newKey = getHashKey(key)
     return newKey
@@ -53,10 +53,11 @@ export function composeWithDataLoader(
    * Add DataLoader to FindByIds
    */
   let findByIdsResolver = typeComposer.get('$findByIds')
-  let findByIdsLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (findByIds)')
-    return findByIdsResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
+  let findByIdsLoader = new DataLoader( (resolveParamsArray) => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (findByIds)')
+      resolve(resolveParamsArray.map(rp => findByIdResolver.resolve(rp)))
+    }),
   { cacheKeyFn: key => getHashKey(key) })
 
   typeComposer.setResolver(
@@ -72,10 +73,11 @@ export function composeWithDataLoader(
    * Add DataLoader to Count
    */
   let countResolver = typeComposer.get('$count')
-  let countLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (count)')
-    return countResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
+  let countLoader = new DataLoader( (resolveParamsArray) => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (count)')
+      resolve(resolveParamsArray.map(rp => countResolver.resolve(rp)))
+    }),
   { cacheKeyFn: key => getHashKey(key) })
 
   typeComposer.setResolver(
@@ -91,10 +93,11 @@ export function composeWithDataLoader(
    * Add DataLoader to FindOne
    */
   let findOneResolver = typeComposer.get('$findOne')
-  let findOneLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (findOne)')
-    return findOneResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
+  let findOneLoader = new DataLoader( (resolveParamsArray) => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (findOne)')
+      resolve(resolveParamsArray.map(rp => findOneResolver.resolve(rp)))
+    }),
   { cacheKeyFn: key => getHashKey(key) })
 
   typeComposer.setResolver(
@@ -109,12 +112,12 @@ export function composeWithDataLoader(
    * Add DataLoader to FindMany
    */
   let findManyResolver = typeComposer.get('$findMany')
-  let findManyLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (findMany)')
-    //response
-    return findManyResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
-  { cacheKeyFn: key => getHashKey(key)})
+  let findManyLoader = new DataLoader( resolveParamsArray => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (findMany)')
+      resolve(resolveParamsArray.map(rp => findManyResolver.resolve(rp)))
+    }),
+  { cacheKeyFn: key => getHashKey(key)} )
 
   typeComposer.setResolver(
     'findMany', 
@@ -131,17 +134,17 @@ export function composeWithDataLoader(
    */
   let connectionResolver = typeComposer.get('$connection')
   let connectionFieldNames = typeComposer.getFieldNames()
-  let connectionLoader = new DataLoader( (resolveParamsArray) => {
-    if (options.debug) console.log('New db request (connection)')
-    //response
-    return connectionResolver.resolve(resolveParamsArray[0]).then(res => [res])
-  },
+  let connectionLoader = new DataLoader( resolveParamsArray => 
+    new Promise((resolve, reject) => {
+      if (options.debug) console.log('New db request (connection)')
+      resolve(resolveParamsArray.map(rp => connectionResolver.resolve(rp)))
+    }),
   { cacheKeyFn: key => getHashKey(key) })
 
   typeComposer.setResolver( 'connection', 
     connectionResolver.wrapResolve(next => rp => {
       if(options.removeProjection){
-        let projection ={ edges: { node: {} } }
+        let projection = { edges: { node: {} } }
         connectionFieldNames.map( field => projection.edges.node[field] = true)
         rp.projection = projection
       }
