@@ -1,7 +1,6 @@
 import { TypeComposer } from 'graphql-compose'
 import DataLoader from 'dataloader'
-import SingleContinous from './singleContinous'
-
+import md5 from 'md5'
 import {
   dataloaderOptions
 } from './definitions'
@@ -43,7 +42,9 @@ export function composeWithDataLoader(
   typeComposer.setResolver( 'findById', 
     findByIdResolver.wrapResolve(next => rp => {
       if (options.removeProjection) delete rp.projection
-      SingleContinous.run(findByIdLoader, rp, 'findById', options)
+      setTimeout(() => {
+        let res = findByIdLoader.clear(rp)
+      },options.cacheExpiration)
       return findByIdLoader.load(rp)
     })
   )
@@ -63,7 +64,9 @@ export function composeWithDataLoader(
   typeComposer.setResolver(
     'findByIds', 
     findByIdsResolver.wrapResolve(fn => rp => {
-      SingleContinous.run(findByIdsLoader, rp, 'findByIds', options)
+      setTimeout(() => {
+        let res = findByIdsLoader.clear(rp)
+      },options.cacheExpiration)
       return findByIdsLoader.load(rp)
     })
   )
@@ -83,7 +86,9 @@ export function composeWithDataLoader(
   typeComposer.setResolver(
     'count', 
     countResolver.wrapResolve(fn => rp => {
-      SingleContinous.run(countLoader, rp, 'count', options)
+      setTimeout(() => {
+        let res = countLoader.clear(rp)
+      },options.cacheExpiration)
       return countLoader.load(rp)
     })
   )
@@ -102,8 +107,10 @@ export function composeWithDataLoader(
 
   typeComposer.setResolver(
     'findOne', 
-    findByIdsResolver.wrapResolve(fn => rp => {
-      SingleContinous.run(findOneLoader, rp, 'findOne', options)
+    findOneResolver.wrapResolve(fn => rp => {
+      setTimeout(() => {
+        let res = findOneLoader.clear(rp)
+      },options.cacheExpiration)
       return findOneLoader.load(rp)
     })
   )
@@ -117,13 +124,15 @@ export function composeWithDataLoader(
       if (options.debug) console.log('New db request (findMany)')
       resolve(resolveParamsArray.map(rp => findManyResolver.resolve(rp)))
     }),
-  { cacheKeyFn: key => getHashKey(key)} )
+  { cacheKeyFn: key => getHashKey(key) } )
 
   typeComposer.setResolver(
     'findMany', 
     findManyResolver.wrapResolve(next => rp => {
       if (options.removeProjection) delete rp.projection
-      SingleContinous.run(findManyLoader, rp, 'findMany', options)
+      setTimeout(() => {
+        let res = findManyLoader.clear(rp)
+      },options.cacheExpiration)
       return findManyLoader.load(rp)
     })
   )
@@ -148,7 +157,9 @@ export function composeWithDataLoader(
         connectionFieldNames.map( field => projection.edges.node[field] = true)
         rp.projection = projection
       }
-      SingleContinous.run(connectionLoader, rp, 'connection', options)
+      setTimeout(() => {
+        let res = connectionLoader.clear(rp)
+      },options.cacheExpiration)
       return connectionLoader.load(rp)
     })
   )
@@ -157,11 +168,11 @@ export function composeWithDataLoader(
   const getHashKey = key =>{
     let object = {}
     Object.assign(object, 
-      { args: key.args }, 
+      { args: key.args || {} }, 
       { projection: key.projection || {} }, 
       { rawQuery: JSON.stringify(key.rawQuery || {}) }, 
       { context: JSON.stringify(key.context || {}) })
-    let hash = JSON.stringify(object).split("").reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)
+    let hash = md5(JSON.stringify(object))
     return hash
   }
 

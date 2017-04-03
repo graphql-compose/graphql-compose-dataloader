@@ -23,7 +23,7 @@ const LanguagesSchema = new mongoose.Schema({
   },
 });
 
-const Languages = mongoose.model('UserModel', UserSchema)
+const Languages = mongoose.model('Languages', LanguagesSchema)
 const LanguagesTC = composeWithDataLoader(composeWithMongoose(Languages),{cacheExpiration: 700})
 ```
 
