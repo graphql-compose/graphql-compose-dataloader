@@ -1,4 +1,6 @@
 # graphql-compose-dataloader
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/stoffern/graphql-compose-dataloader.svg)](https://greenkeeper.io/)
 [![Travis](https://img.shields.io/travis/stoffern/graphql-compose-dataloader.svg)]()
 [![npm version](https://img.shields.io/npm/v/graphql-compose-dataloader.svg?style=flat-square)](https://www.npmjs.com/package/graphql-compose-dataloader) [![npm](https://img.shields.io/npm/l/graphql-compose-dataloader.svg?style=flat-square)](https://github.com/stoffern/graphql-compose-dataloader/blob/master/LICENSE)
 Add DataLoader to graphql-composer resolvers.
