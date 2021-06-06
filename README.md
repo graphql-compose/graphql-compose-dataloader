@@ -1,9 +1,13 @@
-# graphql-compose-dataloader
+# graphql-compose-dataloader – DEPRECATED
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/stoffern/graphql-compose-dataloader.svg)](https://greenkeeper.io/)
 [![Travis](https://img.shields.io/travis/stoffern/graphql-compose-dataloader.svg)]()
 [![npm version](https://img.shields.io/npm/v/graphql-compose-dataloader.svg?style=flat-square)](https://www.npmjs.com/package/graphql-compose-dataloader) [![npm](https://img.shields.io/npm/l/graphql-compose-dataloader.svg?style=flat-square)](https://github.com/stoffern/graphql-compose-dataloader/blob/master/LICENSE)
 Add DataLoader to graphql-composer resolvers.
+
+### Deprecation reason
+
+DataLoader cannot be expressed like a simple plugin. Mostly this plugin was used with [graphql-compose-mongoose](https://github.com/graphql-compose/graphql-compose-mongoose) models. From graphql-compose-mongoose@9.0.0 ([read more](https://github.com/graphql-compose/graphql-compose-mongoose/blob/master/docs/releases/9.0.0.md#added-new-dataloader--dataloadermany-resolvers)) it starts provide new built-in resolvers `dataLoader` & `dataLoaderMany resolvers` which implement DataLoader logic in different manner.
 
 ### Installation
 ```
